@@ -6,7 +6,6 @@ metadata:
     app.kubernetes.io/component: tasks
     app.kubernetes.io/instance: tasks
   name: tasks
-  namespace: stage-manuel
 spec:
   replicas: 1
   revisionHistoryLimit: 10
