@@ -47,3 +47,7 @@
 
 ![](./pictures/jenkinsRoute.png)
 
+![](./pictures/jenkinsIntro.png)
+
+![](./pictures/jenkinsPipeline.png)
+
