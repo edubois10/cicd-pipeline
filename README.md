@@ -24,7 +24,7 @@
     oc set resources dc jenkins --limits=memory=2Gi,cpu=2 --requests=memory=1Gi,cpu=500m
     ```
 
-    ### Register a Jenkins agent pod
+### Register a Jenkins agent pod
 
     3. Create a file with the pod agent definition.
     
