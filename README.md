@@ -40,6 +40,6 @@
 ### Setting up Jenkins
 
     6. Use the provided script ./openshift/settingEnv.sh to setup the environments. Don't forget to provide the environments and the credentials to pull the images. 
-       * Jenkins need to be able to create resources in the different environments
-       * The environment must be able to pull images from private registries.
+        * Jenkins need to be able to create resources in the different environments
+        * The environment must be able to pull images from private registries.
 
