@@ -9,7 +9,7 @@ echo "##########################################################################
 for project in projecta projectb projectc projectd
 do
 
-    oc project $project
+    oc new-project $project
     // Allowing jenkins to create resources into another project
     oc policy add-role-to-user edit system:serviceaccount:project-jenkins:jenkins -n $project
     // Creating secret to pull image from a private registry
