@@ -30,7 +30,7 @@
     
     4. Create ConfigMap with the agent definition file podTemplate.xml.
     ``` bash
-    oc create configmap serv-agent --from-file=./podTemplate.xml -n serv-jenkins
+    oc create configmap serv-agent --from-file=./jenkins/podTemplate.xml -n serv-jenkins
     ```
 
     5.Label the ConfigMap so that Jenkins know it's the definition for the agent.
