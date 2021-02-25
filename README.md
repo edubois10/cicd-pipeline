@@ -32,6 +32,10 @@
     ``` bash
     oc create configmap serv-agent --from-file=./jenkins/podTemplate.xml -n serv-jenkins
     ```
+    
+### Accessing Jenkins
+
+![](./pictures/jenkinsRoute.png)
 
     5.Label the ConfigMap so that Jenkins know it's the definition for the agent.
     ```
