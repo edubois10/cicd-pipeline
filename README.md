@@ -32,7 +32,6 @@
     ``` bash
     oc create configmap serv-agent --from-file=./jenkins/podTemplate.xml -n serv-jenkins
     ```
-
     5.Label the ConfigMap so that Jenkins know it's the definition for the agent.
     ```
     oc label configmap serv-agent role=jenkins-slave
@@ -42,4 +41,9 @@
     6. Use the provided script ./openshift/settingEnv.sh to setup the environments. Don't forget to provide the environments and the credentials to pull the images. 
         * Jenkins need to be able to create resources in the different environments
         * The environment must be able to pull images from private registries.
+
+
+### Accessing Jenkins
+
+![](./pictures/jenkinsRoute.png)
 
