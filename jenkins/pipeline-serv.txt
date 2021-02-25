@@ -4,6 +4,8 @@ pipeline{
     def e2eEnv      = "serv-e2e"
     def preProdEnv  = "serv-preprod"
     def prodEnv     = "serv-prod"
+    
+    def ocpTaskPath = "./openshift/resources/tasks.yaml"
       
   }
   agent any
@@ -22,10 +24,17 @@ pipeline{
           openshift.withCluster() {
             openshift.withProject("${tstEnv}" ) {
            // Modifying the deployment configuration to use a specific image
-            sh ''' sed -i "0,/^\\([[:space:]]*- image: *\\).*/s//\\1quay\\.io\\/edubois10\\/tasks-app\\:$TST_TAG/;" tasks.yaml '''
-            openshift.create(readFile( './tasks.yaml' ))
-            sh 'oc expose dc/tasks --port=8080 -n serv-tst'
-            sh 'oc expose svc/tasks -n  serv-tst'
+            sh ''' sed -i "0,/^\\([[:space:]]*- image: *\\).*/s//\\1quay\\.io\\/edubois10\\/tasks-app\\:$TST_TAG/;" ${ocpTaskPath} '''
+            sh  'oc version'
+            openshift.apply(readFile("${ocpTaskPath}"))
+            
+            
+            def svcSelector = openshift.selector( "service", "tasks")
+            def svcExists = svcSelector.exists()
+            if(!svcExists){
+                sh 'oc expose dc/tasks --port=8080 -n serv-tst'
+                sh 'oc expose svc/tasks -n  serv-tst'
+            }
           }
         }
       }
@@ -46,10 +55,15 @@ pipeline{
             openshift.withCluster() {
               openshift.withProject("${e2eEnv}") {
               // Modifying the deployment configuration to use a specific image
-              sh ''' sed -i "0,/^\\([[:space:]]*- image: *\\).*/s//\\1quay\\.io\\/edubois10\\/tasks-app\\:$E2E_TAG/;" tasks.yaml '''
-              openshift.create(readFile('./tasks.yaml'))
-              sh 'oc expose dc/tasks --port=8080 -n ${e2eEnv}'
-              sh 'oc expose svc/tasks -n  ${e2eEnv}'
+              sh ''' sed -i "0,/^\\([[:space:]]*- image: *\\).*/s//\\1quay\\.io\\/edubois10\\/tasks-app\\:$E2E_TAG/;" $ocpTaskPath '''
+              openshift.apply(readFile("${ocpTaskPath}"))
+              
+              def svcSelector = openshift.selector( "service", "tasks")
+              def svcExists = svcSelector.exists()
+              if(!svcExists){
+                sh 'oc expose dc/tasks --port=8080 -n serv-e2e'
+                sh 'oc expose svc/tasks -n  serv-e2e'
+              }
             }
           }
         }
@@ -71,10 +85,15 @@ pipeline{
             openshift.withCluster() {
               openshift.withProject("${preProdEnv}") {
                 // Modifying the deployment configuration to use a specific image
-                sh ''' sed -i "0,/^\\([[:space:]]*- image: *\\).*/s//\\1quay\\.io\\/edubois10\\/tasks-app\\:$PROD_TAG/;" tasks.yaml '''  
-                openshift.create(readFile('./tasks.yaml'))
-                sh 'oc expose dc/tasks --port=8080 -n ${preProdEnv}'
-                sh 'oc expose svc/tasks -n  ${preProdEnv}'
+                sh ''' sed -i "0,/^\\([[:space:]]*- image: *\\).*/s//\\1quay\\.io\\/edubois10\\/tasks-app\\:$PROD_TAG/;" $ocpTaskPath '''  
+                openshift.apply(readFile("${ocpTaskPath}"))
+                
+                def svcSelector = openshift.selector( "service", "tasks")
+                def svcExists = svcSelector.exists()
+                if(!svcExists){
+                  sh 'oc expose dc/tasks --port=8080 -n serv-preprod'
+                  sh 'oc expose svc/tasks -n  serv-preprod'
+              }
             }
           }
         }
@@ -97,10 +116,15 @@ pipeline{
             openshift.withCluster() {
               openshift.withProject("${prodEnv}") {
                 // Modifying the deployment configuration to use a specific image
-                sh ''' sed -i "0,/^\\([[:space:]]*- image: *\\).*/s//\\1quay\\.io\\/edubois10\\/tasks-app\\:$PROD_TAG/;" tasks.yaml '''  
-                openshift.create(readFile('./tasks.yaml'))
-                sh 'oc expose dc/tasks --port=8080 -n ${prodEnv}'
-                sh 'oc expose svc/tasks -n  ${prodEnv}'
+                sh ''' sed -i "0,/^\\([[:space:]]*- image: *\\).*/s//\\1quay\\.io\\/edubois10\\/tasks-app\\:$PROD_TAG/;" $ocpTaskPath '''  
+                openshift.apply(readFile("${ocpTaskPath}"))
+                
+                def svcSelector = openshift.selector( "service", "tasks")
+                def svcExists = svcSelector.exists()
+                if(!svcExists){
+                  sh 'oc expose dc/tasks --port=8080 -n serv-prod'
+                  sh 'oc expose svc/tasks -n  serv-prod'
+              }
             }
           }
         }
