@@ -8,7 +8,7 @@ spec:
       uri: "http://github.com/edubois10/cicd-pipeline.git"
     sourceSecret:
       name: "basicsecret"
-    contextDir: "openshift-tasks"
+    contextDir: "openshift"
     type: Git
   strategy:
     jenkinsPipelineStrategy:
