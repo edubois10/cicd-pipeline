@@ -1,0 +1,15 @@
+kind: "BuildConfig"
+apiVersion: "v1"
+metadata:
+  name: "serv-pipeline"
+spec:
+  source:
+    git:
+      uri: "http://github.com/edubois10/cicd-pipeline.git"
+    sourceSecret:
+      name: "basicsecret"
+    contextDir: "openshift-tasks"
+    type: Git
+  strategy:
+    jenkinsPipelineStrategy:
+      jenkinsfilePath: Jenkinsfile
