@@ -1,12 +1,17 @@
 kind: "BuildConfig"
 apiVersion: "v1"
 metadata:
-  name: "serv-pipeline"
+  name: "serv-pipeline-test"
 spec:
   source:
-      type: None
+    git:
+      uri: "https://github.com/edubois10/cicd-pipeline.git"
+      ref: "main"
+    sourceSecret:
+      name: "basicsecret"
+    contextDir: "openshift"
+    type: Git
   strategy:
-    type: JenkinsPipeline
     jenkinsPipelineStrategy:
       env:
         - name: TST_TAG
@@ -15,139 +20,4 @@ spec:
           value: e2e
         - name: PROD_TAG
           value: prod
-      jenkinsfile: |-
-        pipeline{
-            environment{
-              def tstEnv      = "serv-tst"
-              def e2eEnv      = "serv-e2e"
-              def preProdEnv  = "serv-preprod"
-              def prodEnv     = "serv-prod"
-
-              def ocpTaskPath = "./openshift/resources/tasks.yaml"
-
-            }
-            agent any
-              stages{
-                  stage('Checkout Source') {
-               // Getting Configuration Files from git
-                  steps{
-                  sh('echo "Hello"')
-                  git branch: 'main', credentialsId: '4ae7cc44-87be-4c7a-ba71-9291f44d9ea7', url: 'https://github.com/edubois10/cicd-pipeline.git'
-                  }
-              }
-
-              stage('Deploy TEST') {
-                steps {
-                  script {
-                    openshift.withCluster() {
-                      openshift.withProject("${tstEnv}" ) {
-                     // Modifying the deployment configuration to use a specific image
-                      sh ''' sed -i "0,/^\\([[:space:]]*- image: *\\).*/s//\\1quay\\.io\\/edubois10\\/tasks-app\\:$TST_TAG/;" ${ocpTaskPath} '''
-                      sh  'oc version'
-                      openshift.apply(readFile("${ocpTaskPath}"))
-
-
-                      def svcSelector = openshift.selector( "service", "tasks")
-                      def svcExists = svcSelector.exists()
-                      if(!svcExists){
-                          sh 'oc expose dc/tasks --port=8080 -n serv-tst'
-                          sh 'oc expose svc/tasks -n  serv-tst'
-                      }
-                    }
-                  }
-                }
-              }
-            }
-
-            stage('Integration Tests') {
-                steps {
-                  script {
-                    sleep 10
-                }
-              }
-            }
-
-            stage('Deploy E2E') {
-                  steps{
-                    script {
-                      openshift.withCluster() {
-                        openshift.withProject("${e2eEnv}") {
-                        // Modifying the deployment configuration to use a specific image
-                        sh ''' sed -i "0,/^\\([[:space:]]*- image: *\\).*/s//\\1quay\\.io\\/edubois10\\/tasks-app\\:$E2E_TAG/;" $ocpTaskPath '''
-                        openshift.apply(readFile("${ocpTaskPath}"))
-
-                        def svcSelector = openshift.selector( "service", "tasks")
-                        def svcExists = svcSelector.exists()
-                        if(!svcExists){
-                          sh 'oc expose dc/tasks --port=8080 -n serv-e2e'
-                          sh 'oc expose svc/tasks -n  serv-e2e'
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-
-
-              stage('Promote to STAGE?') {
-                  steps{
-                  timeout(time:15, unit:'MINUTES') {
-                      input message: "Promote to STAGE?", ok: "Promote"
-                  }
-                }
-              }
-
-              stage('Deploy PreProd') {
-                  steps{
-                    script {
-                      openshift.withCluster() {
-                        openshift.withProject("${preProdEnv}") {
-                          // Modifying the deployment configuration to use a specific image
-                          sh ''' sed -i "0,/^\\([[:space:]]*- image: *\\).*/s//\\1quay\\.io\\/edubois10\\/tasks-app\\:$PROD_TAG/;" $ocpTaskPath '''  
-                          openshift.apply(readFile("${ocpTaskPath}"))
-
-                          def svcSelector = openshift.selector( "service", "tasks")
-                          def svcExists = svcSelector.exists()
-                          if(!svcExists){
-                            sh 'oc expose dc/tasks --port=8080 -n serv-preprod'
-                            sh 'oc expose svc/tasks -n  serv-preprod'
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-
-              stage('Integration Testing with real data') {
-                steps {
-                  script {
-                    sleep 10
-                }
-              }
-            }
-
-
-
-            stage('Deploy Prod') {
-                steps{
-                  script {
-                    openshift.withCluster() {
-                      openshift.withProject("${prodEnv}") {
-                        // Modifying the deployment configuration to use a specific image
-                        sh ''' sed -i "0,/^\\([[:space:]]*- image: *\\).*/s//\\1quay\\.io\\/edubois10\\/tasks-app\\:$PROD_TAG/;" $ocpTaskPath '''  
-                        openshift.apply(readFile("${ocpTaskPath}"))
-
-                        def svcSelector = openshift.selector( "service", "tasks")
-                        def svcExists = svcSelector.exists()
-                        if(!svcExists){
-                          sh 'oc expose dc/tasks --port=8080 -n serv-prod'
-                          sh 'oc expose svc/tasks -n  serv-prod'
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }     
-        }       
-
+      jenkinsfilePath: Jenkinsfile
